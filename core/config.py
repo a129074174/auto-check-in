@@ -23,7 +23,11 @@ GALLERY_CACHE_FILE = os.path.join(DATA_DIR, "gallery_cache.npz")   # 人脸特�
 CAMERA_CONFIG_FILE = os.path.join(DATA_DIR, "camera_config.json")  # 摄像头地址配置文件
 
 # ===== 摄像头 =====
-CAMERA_URL = ""   # 手机 IP Webcam 视频流，如 http://192.168.1.100:8080/video；留空或填 0 用本地摄像头
+# 摄像头来源，支持三种写法：
+#   "" 或 "0"   -> 本地摄像头（第一个设备，索引 0）
+#   "1" / "2"    -> 指定第几个摄像头设备（DroidCam 虚拟摄像头通常是非 0 的某个索引，可用 list_cameras() 查看）
+#   "http://192.168.1.100:8080/video" -> 手机 IP Webcam 的 MJPEG 局域网流
+CAMERA_URL = ""
 
 # ===== 识别参数 =====
 SIMILARITY_THRESHOLD = 0.4   # 余弦相似度阈值（ArcFace 经验值 0.4），越高越严格

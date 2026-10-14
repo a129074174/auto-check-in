@@ -63,3 +63,17 @@ class Camera:
         if self._cap is not None:
             self._cap.release()
             self._cap = None
+
+
+def list_cameras(max_index: int = 8) -> list:
+    """枚举系统里可用的摄像头设备索引（从 0 开始）。
+    DroidCam 等「虚拟摄像头」也会以某个索引出现，可用此函数找到它。"""
+    available = []
+    for i in range(max_index):
+        cap = cv2.VideoCapture(i)
+        try:
+            if cap.isOpened():
+                available.append(i)
+        finally:
+            cap.release()
+    return available

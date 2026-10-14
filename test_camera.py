@@ -22,7 +22,7 @@ from core.config import (
 )
 from core.gallery import Gallery
 from core.recognizer import Recognizer
-from core.camera import Camera, CameraError
+from core.camera import Camera, CameraError, list_cameras
 from core.matcher import match, DedupTracker
 
 
@@ -68,13 +68,20 @@ def main() -> None:
 
     print(f"签到范围：学校={school}  年级={grade}  班级={cls or '全部'}  模式={scope}")
 
+    # 枚举可用摄像头设备（DroidCam 虚拟摄像头会以某个索引出现）
+    available = list_cameras()
+    print(f"检测到摄像头设备索引：{available if available else '无'}")
+    if not camera_url or camera_url == "0":
+        print("  本地模式下默认使用索引 0；")
+        print("  如用 DroidCam 虚拟摄像头，请用参数指定索引，例如：python test_camera.py 1")
+
     cam = Camera()
     try:
         cam.open(camera_url)
     except CameraError as e:
         print(f"[错误] {e}")
         return
-    print(f"摄像头已打开：{'手机' if cam.is_remote else '本地'}")
+    print(f"摄像头已打开：{'网络流' if cam.is_remote else '本地摄像头（索引 ' + str(camera_url or 0) + '）'}")
 
     rec = Recognizer()
     dedup = DedupTracker(DEDUP_COOLDOWN)
