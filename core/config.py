@@ -33,8 +33,11 @@ DEDUP_COOLDOWN = 10          # 去重冷却时间（秒），同一学生此时�
 # ===== 底册扫描 =====
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}   # 支持的图片扩展名
 
+# 示例底册目录（占位符，方便首次测试；真实使用时替换为真实的学校/年级/班级名即可）
+EXAMPLE_PHOTOS_DIR = os.path.join(BASE_PHOTOS_DIR, "示例学校", "2024级", "(1)班")
+
 
 def ensure_dirs() -> None:
-    """确保运行所需目录存在（底册目录、数据目录）。"""
-    os.makedirs(BASE_PHOTOS_DIR, exist_ok=True)
+    """确保运行所需目录存在（底册目录、数据目录、示例三级目录）。"""
+    os.makedirs(EXAMPLE_PHOTOS_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)

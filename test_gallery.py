@@ -10,7 +10,7 @@
 import sys
 import time
 
-from core.config import ensure_dirs, BASE_PHOTOS_DIR, GALLERY_CACHE_FILE
+from core.config import ensure_dirs, BASE_PHOTOS_DIR, GALLERY_CACHE_FILE, EXAMPLE_PHOTOS_DIR
 from core.gallery import Gallery, parse_filename
 
 
@@ -74,6 +74,9 @@ def test_scan_and_cache(with_model: bool) -> None:
 if __name__ == "__main__":
     no_model = "--no-model" in sys.argv
     ensure_dirs()
+    print("示例底册目录（把测试照片放到这里）：")
+    print(f"   {EXAMPLE_PHOTOS_DIR}")
+    print()
     test_parse()
     test_scan_and_cache(with_model=not no_model)
     print("=" * 50)
