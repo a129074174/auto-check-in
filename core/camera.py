@@ -69,6 +69,10 @@ def list_cameras(max_index: int = 8) -> list:
     """枚举系统里可用的摄像头设备索引（从 0 开始）。
     DroidCam 等「虚拟摄像头」也会以某个索引出现，可用此函数找到它。"""
     available = []
+    try:
+        cv2.setLogLevel(0)  # 静音枚举时 OpenCV 对不存在设备的探测日志（无害报错）
+    except Exception:
+        pass
     for i in range(max_index):
         cap = cv2.VideoCapture(i)
         try:
