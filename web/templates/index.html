@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人脸签到系统</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span>人脸签到系统</span>
+    </div>
+    <div class="nav-right">
+      <span id="clock" class="clock">--:--:--</span>
+      <span id="status-badge" class="badge badge-idle">未开始</span>
+      <button id="btn-export" class="btn btn-outline">导出 Excel</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="left">
+      <div class="controls card">
+        <div class="select-group">
+          <label>学校
+            <select id="sel-school"><option value="">请选择学校</option></select>
+          </label>
+          <label>年级
+            <select id="sel-grade"><option value="">请选择年级</option></select>
+          </label>
+          <label>班级
+            <select id="sel-class"><option value="">全部班级</option></select>
+          </label>
+        </div>
+        <div class="actions">
+          <button id="btn-toggle" class="btn btn-primary">开始签到</button>
+          <button id="btn-camera" class="btn btn-ghost">摄像头设置</button>
+        </div>
+      </div>
+
+      <div class="video-card card">
+        <img id="video" src="/video_feed" alt="实时画面" onerror="this.style.display='none';document.getElementById('video-err').style.display='flex'">
+        <div id="video-err" class="video-err" style="display:none">摄像头未连接，请点击右上角「摄像头设置」</div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="stats card">
+        <div class="stat">
+          <span class="num" id="stat-total">0</span>
+          <span class="label">总记录</span>
+        </div>
+        <div class="stat">
+          <span class="num green" id="stat-success">0</span>
+          <span class="label">已签到</span>
+        </div>
+        <div class="stat">
+          <span class="num blue" id="stat-repeat">0</span>
+          <span class="label">重复</span>
+        </div>
+        <div class="stat">
+          <span class="num red" id="stat-fail">0</span>
+          <span class="label">失败</span>
+        </div>
+      </div>
+
+      <div class="results card">
+        <div class="results-head">
+          <h2>签到记录</h2>
+          <button id="btn-clear" class="btn btn-ghost btn-sm">清空</button>
+        </div>
+        <ul id="results-list" class="results-list">
+          <li class="empty">暂无签到记录</li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+
+  <div id="camera-modal" class="modal hidden">
+    <div class="modal-box">
+      <h2>摄像头设置</h2>
+      <p class="hint">手机 IP Webcam：填 <code>http://手机IP:8080/video</code><br>本地摄像头：留空或填 <code>0</code></p>
+      <input id="camera-url" placeholder="例如 http://192.168.1.100:8080/video">
+      <p id="camera-msg" class="camera-msg"></p>
+      <div class="modal-actions">
+        <button id="btn-camera-save" class="btn btn-primary">保存并连接</button>
+        <button id="btn-camera-cancel" class="btn btn-ghost">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
