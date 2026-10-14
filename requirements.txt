@@ -1,0 +1,10 @@
+# 人脸签到系统依赖清单
+# 安装方式：双击「安装环境.bat」，或手动执行：pip install -r requirements.txt
+numpy>=1.24,<2.0
+opencv-python>=4.8
+insightface>=0.7.3
+onnxruntime>=1.16
+flask>=3.0
+openpyxl>=3.1
+pyttsx3>=2.90
+pyinstaller>=6.0

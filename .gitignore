@@ -1,0 +1,25 @@
+# ===== 隐私数据（严禁提交）=====
+# 底册照片：包含真实学生姓名、身份证号，绝不提交
+base_photos/
+# 运行期产物：特征缓存、签到结果 xlsx、摄像头地址配置，含隐私，绝不提交
+data/
+
+# ===== Python 运行产物 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ===== PyInstaller 打包产物 =====
+build/
+dist/
+*.manifest
+
+# ===== 编辑器 / 系统 =====
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini
+.DS_Store
