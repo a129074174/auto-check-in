@@ -65,7 +65,7 @@ def test_scan_and_cache(with_model: bool) -> None:
 
         g2 = Gallery()
         t0 = time.time()
-        ok = g2.load_cache(GALLERY_CACHE_FILE)
+        ok = g2.load_cache(GALLERY_CACHE_FILE, BASE_PHOTOS_DIR)
         cost = time.time() - t0
         print(f"   重新加载缓存: {'成功' if ok else '失败'}，耗时 {cost:.3f} 秒，共 {g2.total} 人")
         print("   （第二次加载应远快于第一次建库，说明缓存生效）")

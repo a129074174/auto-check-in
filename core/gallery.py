@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """底册扫描建库：解析「学校/年级/班级」三级目录与「身份证号+姓名」文件名，生成/加载特征缓存。"""
+import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -41,12 +42,26 @@ def imread_unicode(path) -> np.ndarray:
     return cv2.imdecode(data, cv2.IMREAD_COLOR)
 
 
+def compute_base_signature(base_dir: str) -> str:
+    """计算底册目录的指纹：所有图片文件的相对路径 + 大小 + 修改时间。
+    底册增删改照片后指纹会变化，用于让特征缓存自动失效、重新建库。"""
+    base = Path(base_dir)
+    items = []
+    if base.exists():
+        for p in sorted(base.rglob("*")):
+            if p.is_file() and p.suffix.lower() in IMAGE_EXTS:
+                st = p.stat()
+                items.append(f"{p.relative_to(base)}|{st.st_size}|{int(st.st_mtime)}")
+    return hashlib.md5("\n".join(items).encode("utf-8")).hexdigest()
+
+
 class Gallery:
     """底册索引：school -> grade -> class -> [StudentFace]。"""
 
     def __init__(self):
         self.schools: Dict[str, Dict[str, Dict[str, List[StudentFace]]]] = {}
         self._flat: List[StudentFace] = []
+        self.base_signature: str = ""
 
     # ---- 查询 ----
     def class_gallery(self, school: str, grade: str, cls: str) -> List[StudentFace]:
@@ -98,6 +113,7 @@ class Gallery:
                             recognizer, stats,
                         )
         self._flat = self._all_faces()
+        self.base_signature = compute_base_signature(base_dir)
         return stats
 
     def _add_photo(self, img_file, school, grade, cls, recognizer, stats) -> None:
@@ -144,12 +160,20 @@ class Gallery:
             grade_dirs=np.array([f.grade_dir for f in self._flat], dtype=object),
             class_dirs=np.array([f.class_dir for f in self._flat], dtype=object),
             embeddings=np.array([f.embedding for f in self._flat], dtype=np.float32),
+            base_signature=np.array([self.base_signature], dtype=object),
         )
 
-    def load_cache(self, path: str) -> bool:
+    def load_cache(self, path: str, base_dir: str = None) -> bool:
         if not Path(path).exists():
             return False
         data = np.load(path, allow_pickle=True)
+        # 底册目录变化（增删照片）时，让缓存自动失效
+        if base_dir is not None:
+            if "base_signature" not in data:
+                return False  # 旧格式缓存（无签名），强制重建
+            cached_sig = str(data["base_signature"][0]) if len(data["base_signature"]) > 0 else ""
+            if cached_sig != compute_base_signature(base_dir):
+                return False
         self.schools = {}
         self._flat = []
         n = len(data["student_ids"])

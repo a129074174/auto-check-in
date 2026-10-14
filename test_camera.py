@@ -28,10 +28,10 @@ from core.matcher import match, DedupTracker
 
 def load_gallery() -> Gallery:
     gallery = Gallery()
-    if gallery.load_cache(GALLERY_CACHE_FILE):
+    if gallery.load_cache(GALLERY_CACHE_FILE, BASE_PHOTOS_DIR):
         print(f"已从缓存加载底册，共 {gallery.total} 人")
         return gallery
-    print("未找到特征缓存，正在从底册建库（首次较慢，需联网下载模型）...")
+    print("底册缓存不存在或底册已变化，正在重新建库（首次较慢）...")
     rec = Recognizer()
     stats = gallery.build(BASE_PHOTOS_DIR, rec)
     print(f"建库完成：学生 {stats['students']} 人，跳过 {len(stats['skipped'])} 张")
