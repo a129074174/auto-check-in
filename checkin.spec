@@ -16,16 +16,28 @@ if os.path.isdir(model_dir):
     for root, dirs, files in os.walk(model_dir):
         for f in files:
             src = os.path.join(root, f)
-            rel = os.path.relpath(src, model_dir)
-            model_datas.append((src, os.path.join("models", rel)))
+            rel_dir = os.path.relpath(root, model_dir)
+            # target 必须是目录（PyInstaller 会把源文件名追加到 target 目录下）
+            model_datas.append((src, os.path.join("models", rel_dir)))
 else:
     print("[警告] 未找到模型目录：%s" % model_dir)
     print("       请先联网运行一次程序（自动下载模型）后再打包。")
 
+# insightface 打包后从 _MEIPASS/objects 读取 meanshape_68.pkl（关键点对齐用），需显式放到 objects/ 目录
+meanshape_datas = []
+try:
+    import insightface
+    _idir = os.path.dirname(insightface.__file__)
+    _ms = os.path.join(_idir, "data", "objects", "meanshape_68.pkl")
+    if os.path.isfile(_ms):
+        meanshape_datas.append((_ms, "objects"))
+except Exception:
+    pass
+
 datas = [
     ("web/templates", "web/templates"),
     ("web/static", "web/static"),
-] + model_datas + insightface_datas + onnx_datas
+] + model_datas + insightface_datas + onnx_datas + meanshape_datas
 
 binaries = insightface_bins + onnx_bins
 hiddenimports = insightface_hidden + onnx_hidden
@@ -39,7 +51,7 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[],
     excludes=[
-        "tkinter", "matplotlib", "scipy", "pandas",
+        "tkinter", "matplotlib", "pandas",
         "PyQt5", "PySide2", "PySide6", "PyQt6",
         "IPython", "notebook", "jupyter", "pytest",
     ],
