@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 echo ============================================
-echo   人脸签到系统 - 打包成免安装文件夹
+echo   笑脸报到 - 打包成免安装文件夹
 echo ============================================
 echo.
 
@@ -19,10 +19,10 @@ echo [3/3] 开始打包（首次较慢，约几分钟，请耐心等待）...
 python -m PyInstaller --clean --noconfirm checkin.spec
 
 echo.
-if exist "dist\人脸签到系统\启动签到.exe" (
+if exist "dist\笑脸报到\笑脸报到.exe" (
     echo [成功] 打包完成！
-    echo 产物位置：dist\人脸签到系统\
-    echo 把整个文件夹拷贝到别的电脑，双击里面的「启动签到.exe」即可使用。
+    echo 产物位置：dist\笑脸报到\
+    echo 把整个文件夹拷贝到别的电脑，双击里面的「笑脸报到.exe」即可使用。
 ) else (
     echo [失败] 打包未成功，请把上面的错误信息发给开发者。
 )
