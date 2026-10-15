@@ -6,6 +6,7 @@
 """
 import json
 import os
+import sys
 import threading
 import time
 import webbrowser
@@ -25,7 +26,15 @@ from core.matcher import match, DedupTracker
 from core.voice import VoiceBroadcaster
 from core.exporter import CheckinRecord, export_xlsx, make_export_path
 
-app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
+def _resource_path(rel: str) -> str:
+    """打包后资源位于解包目录 _MEIPASS；源码运行时位于脚本所在目录。"""
+    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base, rel)
+
+
+app = Flask(__name__,
+            template_folder=_resource_path("web/templates"),
+            static_folder=_resource_path("web/static"))
 
 # ===== 全局状态 =====
 gallery = Gallery()
