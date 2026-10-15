@@ -42,6 +42,12 @@ EXAMPLE_PHOTOS_DIR = os.path.join(BASE_PHOTOS_DIR, "示例学校", "2024级", "(
 
 
 def ensure_dirs() -> None:
-    """确保运行所需目录存在（底册目录、数据目录、示例三级目录）。"""
-    os.makedirs(EXAMPLE_PHOTOS_DIR, exist_ok=True)
+    """确保运行所需目录存在。
+    底册根目录、数据目录始终创建；示例三级目录仅在底册根目录下
+    还没有任何学校目录时创建（首次使用占位符），之后用户自行改名、
+    增删学校目录都不会被覆盖或重新生成。"""
+    os.makedirs(BASE_PHOTOS_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
+    has_school = any(p.is_dir() for p in Path(BASE_PHOTOS_DIR).iterdir())
+    if not has_school:
+        os.makedirs(EXAMPLE_PHOTOS_DIR, exist_ok=True)

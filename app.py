@@ -6,6 +6,7 @@
 """
 import json
 import os
+import socket
 import sys
 import threading
 import time
@@ -307,6 +308,19 @@ def api_camera():
 
 
 # ===== 入口 =====
+def _find_free_port(preferred: int, tries: int = 10) -> int:
+    """返回 127.0.0.1 上第一个真正空闲的端口，从 preferred 起向后探测。
+    Windows 允许多个进程重复绑定同一端口（SO_REUSEADDR），会让新实例
+    看似启动成功，浏览器却连到旧实例、显示旧底册或「未检测到底册」；
+    这里用 connect 主动探测，避开这种假绑定。"""
+    for port in range(preferred, preferred + tries):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(0.3)
+            if s.connect_ex(("127.0.0.1", port)) != 0:   # 连不上 = 空闲
+                return port
+    return preferred
+
+
 def main() -> None:
     ensure_dirs()
     print("正在加载底册...")
@@ -327,7 +341,10 @@ def main() -> None:
 
     threading.Thread(target=recognition_loop, daemon=True).start()
 
-    port = 5000
+    port = _find_free_port(5000)
+    if port != 5000:
+        print(f"[提示] 端口 5000 已被占用（可能有旧的「笑脸报到」窗口没关闭），自动改用端口 {port}。")
+        print("       建议关掉所有旧的「笑脸报到」窗口后重新打开，避免多个实例同时运行。")
     threading.Timer(1.0, lambda: webbrowser.open(f"http://127.0.0.1:{port}")).start()
     print(f"启动完成，请在浏览器访问 http://127.0.0.1:{port}（已自动打开）")
     app.run(host="127.0.0.1", port=port, threaded=True, debug=False)
