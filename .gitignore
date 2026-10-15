@@ -23,3 +23,6 @@ dist/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# ===== 个人/项目私有文档（含个人 GitHub 地址等信息，不随软件分享）=====
+项目需求.docx
