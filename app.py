@@ -50,6 +50,7 @@ results = []              # CheckinRecord 列表
 latest_frame = None       # 最新一帧（供 MJPEG 流）
 latest_faces_info = []    # [(bbox, matched, name)]
 _last_fail_record = 0.0
+_last_repeat_record = {}   # 重复记录节流：学生key -> 上次记录时间
 
 
 # ===== 摄像头配置持久化 =====
@@ -143,9 +144,13 @@ def recognition_loop() -> None:
                         results.append(rec)
                     voice.speak(f"{stu.name}签到成功")
                 else:
-                    rec.result = "重复"
-                    with _state_lock:
-                        results.append(rec)
+                    # 重复：同一学生冷却期内只记一条，避免每 0.4 秒刷一条重复
+                    key = dedup._key(stu)
+                    if now - _last_repeat_record.get(key, 0.0) >= DEDUP_COOLDOWN:
+                        _last_repeat_record[key] = now
+                        rec.result = "重复"
+                        with _state_lock:
+                            results.append(rec)
             else:
                 info.append((b, False, ""))
                 if now - _last_fail_record >= DEDUP_COOLDOWN:
@@ -233,6 +238,7 @@ def api_stop():
     global checkin_active
     with _state_lock:
         checkin_active = False
+        latest_faces_info.clear()   # 停止后清除画面上的识别框
     return jsonify({"ok": True})
 
 
