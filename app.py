@@ -144,13 +144,14 @@ def recognition_loop() -> None:
                         results.append(rec)
                     voice.speak(f"{stu.name}签到成功")
                 else:
-                    # 重复：同一学生冷却期内只记一条，避免每 0.4 秒刷一条重复
+                    # 重复：同一学生冷却期内只记一条、只播报一次，避免刷屏
                     key = dedup._key(stu)
                     if now - _last_repeat_record.get(key, 0.0) >= DEDUP_COOLDOWN:
                         _last_repeat_record[key] = now
                         rec.result = "重复"
                         with _state_lock:
                             results.append(rec)
+                        voice.speak(f"{stu.name}重复签到")
             else:
                 info.append((b, False, ""))
                 if now - _last_fail_record >= DEDUP_COOLDOWN:
