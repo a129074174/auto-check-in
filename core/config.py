@@ -32,7 +32,7 @@ CAMERA_URL = ""
 # ===== 识别参数 =====
 SIMILARITY_THRESHOLD = 0.4   # 余弦相似度阈值（ArcFace 经验值 0.4），越高越严格
 RECOGNIZE_INTERVAL = 0.4     # 识别节流间隔（秒），降低 CPU 占用
-DEDUP_COOLDOWN = 10          # 去重冷却时间（秒），同一学生此时间内不重复记录
+DEDUP_COOLDOWN = 10          # 重复/失败记录的节流间隔（秒）；成功记录每个签到批次只记一次
 
 # ===== 底册扫描 =====
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}   # 支持的图片扩展名

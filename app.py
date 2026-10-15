@@ -25,7 +25,7 @@ from core.gallery import Gallery
 from core.recognizer import Recognizer
 from core.matcher import match, DedupTracker
 from core.voice import VoiceBroadcaster
-from core.exporter import CheckinRecord, export_xlsx, make_export_path
+from core.exporter import CheckinRecord, export_checkin, make_export_path
 
 def _resource_path(rel: str) -> str:
     """打包后资源位于解包目录 _MEIPASS；源码运行时位于脚本所在目录。"""
@@ -238,6 +238,8 @@ def api_start():
     with _state_lock:
         current_scope = {"school": school, "grade": grade, "cls": cls, "scope": scope}
         checkin_active = True
+        _last_repeat_record.clear()
+    dedup.reset()   # 新批次开始：同一学生可重新记一次成功
     voice.speak("笑脸签到，请您微笑！")
     return jsonify({"ok": True, "scope": scope})
 
@@ -280,6 +282,13 @@ def api_clear():
     return jsonify({"ok": True})
 
 
+def _student_key(student_id: str, school: str, grade: str, cls: str, name: str):
+    """学生唯一标识：有身份证号用身份证号，否则用学校/年级/班级/姓名组合。"""
+    if student_id:
+        return ("id", student_id)
+    return ("n", school, grade, cls, name)
+
+
 @app.route("/api/export")
 def api_export():
     with _state_lock:
@@ -287,8 +296,36 @@ def api_export():
         scope = dict(current_scope)
     if not records:
         return jsonify({"ok": False, "error": "还没有签到记录"}), 400
+
+    # 范围内已签到学生的首次成功时间
+    signed = {}
+    for r in records:
+        if r.result != "成功":
+            continue
+        signed.setdefault(_student_key(r.student_id, r.school, r.grade, r.class_name, r.name), r.time_str)
+
+    # 按当前筛选范围取出底册学生名单
+    school, grade, cls = scope["school"], scope["grade"], scope["cls"]
+    if scope["scope"] == "class":
+        students = gallery.class_gallery(school, grade, cls)
+    elif scope["scope"] == "grade":
+        students = gallery.grade_gallery(school, grade)
+    else:
+        students = gallery.school_gallery(school)
+
+    roster = []
+    for s in students:
+        key = _student_key(s.student_id, s.school_dir, s.grade_dir, s.class_dir, s.name)
+        roster.append({
+            "school": s.school_dir, "grade": s.grade_dir, "cls": s.class_dir,
+            "name": s.name, "student_id": s.student_id,
+            "status": "已签到" if key in signed else "未签到",
+            "sign_time": signed.get(key, ""),
+        })
+    roster.sort(key=lambda x: (x["grade"], x["cls"], x["name"]))
+
     name_part = f"{scope['school']}_{scope['grade']}_{scope['cls'] or '全部'}"
-    path = export_xlsx(records, make_export_path(name_part))
+    path = export_checkin(records, roster, make_export_path(name_part))
     return send_file(path, as_attachment=True, download_name=os.path.basename(path))
 
 

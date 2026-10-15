@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """人脸匹配：先班级→再年级→失败 的分级匹配，以及会话去重。"""
-import time
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
@@ -62,11 +61,13 @@ def match(embedding, gallery, school: str, grade: str, cls: str, scope: str, thr
 
 
 class DedupTracker:
-    """会话去重：同一学生在冷却期内不重复记录。"""
+    """会话去重：同一学生在本次签到批次内只记一次成功，其余一律按重复处理。
+    点「开始签到」开启新批次时调用 reset() 重新计数。"""
 
     def __init__(self, cooldown: float = 10.0):
+        # cooldown 保留以兼容旧调用；现仅用作「重复/失败记录」的节流间隔（见 app.py）
         self.cooldown = cooldown
-        self._last_seen: dict = {}
+        self._recorded: set = set()
 
     @staticmethod
     def _key(student: StudentFace) -> str:
@@ -75,11 +76,13 @@ class DedupTracker:
         return f"n:{student.school_dir}/{student.grade_dir}/{student.class_dir}/{student.name}"
 
     def should_record(self, student: StudentFace) -> bool:
-        """返回 True 表示可记录（非重复）；False 表示冷却期内重复。"""
+        """返回 True 表示本批次首次见到该学生（记成功）；之后一律返回 False（记重复）。"""
         key = self._key(student)
-        now = time.time()
-        last = self._last_seen.get(key)
-        if last is not None and now - last < self.cooldown:
+        if key in self._recorded:
             return False
-        self._last_seen[key] = now
+        self._recorded.add(key)
         return True
+
+    def reset(self) -> None:
+        """开始新的签到批次：清空已记录名单，同一学生可再次记一次成功。"""
+        self._recorded.clear()
