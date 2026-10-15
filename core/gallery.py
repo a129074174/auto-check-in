@@ -73,6 +73,13 @@ class Gallery:
             result.extend(cls)
         return result
 
+    def school_gallery(self, school: str) -> List[StudentFace]:
+        result: List[StudentFace] = []
+        for grades in self.schools.get(school, {}).values():
+            for cls in grades.values():
+                result.extend(cls)
+        return result
+
     def list_schools(self) -> List[str]:
         return list(self.schools.keys())
 

@@ -48,10 +48,16 @@ def match(embedding, gallery, school: str, grade: str, cls: str, scope: str, thr
             return MatchResult(True, best, "grade", sim)
         return MatchResult(False, best, "none", sim)
 
-    # 年级签到
-    best, sim = _best_match(embedding, gallery.grade_gallery(school, grade))
+    if scope == "grade":
+        best, sim = _best_match(embedding, gallery.grade_gallery(school, grade))
+        if best is not None and sim >= threshold:
+            return MatchResult(True, best, "grade", sim)
+        return MatchResult(False, best, "none", sim)
+
+    # 学校签到（整个学校所有年级）
+    best, sim = _best_match(embedding, gallery.school_gallery(school))
     if best is not None and sim >= threshold:
-        return MatchResult(True, best, "grade", sim)
+        return MatchResult(True, best, "school", sim)
     return MatchResult(False, best, "none", sim)
 
 

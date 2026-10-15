@@ -15,6 +15,8 @@ model_dir = os.path.join(home, ".insightface", "models")
 if os.path.isdir(model_dir):
     for root, dirs, files in os.walk(model_dir):
         for f in files:
+            if not f.lower().endswith(".onnx"):
+                continue  # 跳过 buffalo_l.zip 等下载缓存，只收集模型文件
             src = os.path.join(root, f)
             rel_dir = os.path.relpath(root, model_dir)
             # target 必须是目录（PyInstaller 会把源文件名追加到 target 目录下）

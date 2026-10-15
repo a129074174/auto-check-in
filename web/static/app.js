@@ -4,7 +4,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
-  var selSchool = $("sel-school");
+  var currentSchool = "";
   var selGrade = $("sel-grade");
   var selClass = $("sel-class");
   var btnToggle = $("btn-toggle");
@@ -36,23 +36,24 @@
     });
   }
 
-  // ===== 选班三级联动 =====
+  // ===== 学校自动识别 + 年级/班级联动 =====
   function loadSchools() {
     api("/api/schools").then(function (list) {
-      selSchool.innerHTML = '<option value="">请选择学校</option>';
-      (list || []).forEach(function (s) {
-        var o = document.createElement("option");
-        o.value = s; o.textContent = s;
-        selSchool.appendChild(o);
-      });
+      list = list || [];
+      if (list.length) {
+        currentSchool = list[0];
+        $("school-name").textContent = currentSchool;
+        loadGrades();
+      } else {
+        $("school-name").textContent = "未检测到底册";
+      }
     });
   }
   function loadGrades() {
-    var school = selSchool.value;
-    selGrade.innerHTML = '<option value="">请选择年级</option>';
+    selGrade.innerHTML = '<option value="">全部年级</option>';
     selClass.innerHTML = '<option value="">全部班级</option>';
-    if (!school) return;
-    api("/api/grades?school=" + encodeURIComponent(school)).then(function (list) {
+    if (!currentSchool) return;
+    api("/api/grades?school=" + encodeURIComponent(currentSchool)).then(function (list) {
       (list || []).forEach(function (g) {
         var o = document.createElement("option");
         o.value = g; o.textContent = g;
@@ -61,10 +62,10 @@
     });
   }
   function loadClasses() {
-    var school = selSchool.value, grade = selGrade.value;
+    var grade = selGrade.value;
     selClass.innerHTML = '<option value="">全部班级</option>';
-    if (!school || !grade) return;
-    api("/api/classes?school=" + encodeURIComponent(school) +
+    if (!currentSchool || !grade) return;
+    api("/api/classes?school=" + encodeURIComponent(currentSchool) +
         "&grade=" + encodeURIComponent(grade)).then(function (list) {
       (list || []).forEach(function (c) {
         var o = document.createElement("option");
@@ -73,7 +74,6 @@
       });
     });
   }
-  selSchool.addEventListener("change", loadGrades);
   selGrade.addEventListener("change", loadClasses);
 
   // ===== 开始/停止 =====
@@ -83,9 +83,9 @@
         setActive(false);
       });
     } else {
-      var school = selSchool.value, grade = selGrade.value, cls = selClass.value;
-      if (!school || !grade) {
-        alert("请先选择学校和年级");
+      var school = currentSchool, grade = selGrade.value, cls = selClass.value;
+      if (!school) {
+        alert("未检测到底册，请先在 base_photos 目录放入照片后重启软件");
         return;
       }
       api("/api/start", {

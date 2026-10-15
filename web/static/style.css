@@ -149,6 +149,17 @@ select {
   font-family: inherit;
 }
 select:focus { outline: none; border-color: var(--primary-light); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.school-name {
+  display: inline-block;
+  min-width: 130px;
+  padding: 10px 12px;
+  border: 1.5px dashed var(--primary-light);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--blue-bg);
+  color: var(--primary-dark);
+  font-weight: 600;
+}
 .actions { display: flex; gap: 10px; }
 
 /* ===== 视频区 ===== */

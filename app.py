@@ -227,7 +227,13 @@ def api_start():
     school = data.get("school", "")
     grade = data.get("grade", "")
     cls = data.get("cls", "")
-    scope = "class" if cls and cls not in ("全部", "全部班级") else "grade"
+    # 范围判断：年级空=整个学校；班级空=整个年级；否则=该班
+    if not school or not grade or grade in ("全部", "全部年级"):
+        scope = "school"
+    elif not cls or cls in ("全部", "全部班级"):
+        scope = "grade"
+    else:
+        scope = "class"
     with _state_lock:
         current_scope = {"school": school, "grade": grade, "cls": cls, "scope": scope}
         checkin_active = True
