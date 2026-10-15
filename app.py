@@ -231,6 +231,7 @@ def api_start():
     with _state_lock:
         current_scope = {"school": school, "grade": grade, "cls": cls, "scope": scope}
         checkin_active = True
+    voice.speak("笑脸签到，请您微笑！")
     return jsonify({"ok": True, "scope": scope})
 
 
