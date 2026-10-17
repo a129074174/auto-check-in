@@ -28,6 +28,15 @@ class StudentFace:
 
 _ID_PATTERN = re.compile(r"^(\d{17}[\dXx])(.*)$")
 
+# 从班级名中提取年级（如「高二一班」→「高二」、「初三年级」→「初三」）；提取不出则用默认年级
+_GRADE_RE = re.compile(r"^(高一|高二|高三|初一|初二|初三|"
+                       r"[一二三四五六七八九十零]+年级|中职|高职|中专|小学|初中|高中)")
+
+
+def _derive_grade_from_class(cls: str) -> str:
+    m = _GRADE_RE.match(cls)
+    return m.group(1) if m else "默认年级"
+
 
 def parse_filename(filename: str) -> Tuple[str, str]:
     """把「身份证号+姓名」文件名拆成 (身份证号, 姓名)。
@@ -112,9 +121,18 @@ class Gallery:
                 relp = img_file.relative_to(base)
             except ValueError:
                 continue
-            if len(relp.parts) != 4:   # 必须位于 学校/年级/班级/照片.jpg 三级结构内
+            parts = relp.parts
+            if len(parts) == 4:
+                school, grade, cls, _fname = parts   # 标准：学校/年级/班级/照片
+            elif len(parts) == 3:
+                # 兼容两级结构：学校/班级/照片（用户常省略年级），
+                # 从班级名推断年级（如「高二一班」→「高二」），推断不出则用「默认年级」
+                school, cls, _fname = parts
+                grade = _derive_grade_from_class(cls)
+            else:
+                stats["skipped"].append(
+                    f"{relp}（目录层级应为 学校/年级/班级/照片 或 学校/班级/照片）")
                 continue
-            school, grade, cls, _fname = relp.parts
             rel = str(relp)
             sig = _file_sig(img_file)
 
