@@ -30,6 +30,7 @@ CAMERA_CONFIG_FILE = os.path.join(DATA_DIR, "camera_config.json")  # 摄像头�
 CAMERA_URL = ""
 
 # ===== 识别参数 =====
+DET_SIZE = (320, 320)        # 人脸检测输入尺寸：越小越快、越大越能检出远处小脸。320 兼顾速度与精度
 SIMILARITY_THRESHOLD = 0.4   # 余弦相似度阈值（ArcFace 经验值 0.4），越高越严格
 RECOGNIZE_INTERVAL = 0.4     # 识别节流间隔（秒），降低 CPU 占用
 DEDUP_COOLDOWN = 10          # 重复/失败记录的节流间隔（秒）；成功记录每个签到批次只记一次

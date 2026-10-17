@@ -28,14 +28,12 @@ from core.matcher import match, DedupTracker
 
 def load_gallery() -> Gallery:
     gallery = Gallery()
-    if gallery.load_cache(GALLERY_CACHE_FILE, BASE_PHOTOS_DIR):
-        print(f"已从缓存加载底册，共 {gallery.total} 人")
-        return gallery
-    print("底册缓存不存在或底册已变化，正在重新建库（首次较慢）...")
+    gallery.load_cache(GALLERY_CACHE_FILE)
     rec = Recognizer()
     stats = gallery.build(BASE_PHOTOS_DIR, rec)
-    print(f"建库完成：学生 {stats['students']} 人，跳过 {len(stats['skipped'])} 张")
-    gallery.save_cache(GALLERY_CACHE_FILE)
+    if stats.get("changed") or stats.get("removed"):
+        gallery.save_cache(GALLERY_CACHE_FILE)
+    print(f"建库完成：学生 {stats['students']} 人（新增/变更 {stats['changed']}，复用 {stats['reused']}，跳过 {len(stats['skipped'])} 张）")
     return gallery
 
 

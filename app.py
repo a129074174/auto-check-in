@@ -80,13 +80,13 @@ def init_recognizer() -> None:
 
 
 def load_gallery() -> None:
-    """加载底册：缓存存在且未变化则秒开，否则建库。"""
-    if gallery.load_cache(GALLERY_CACHE_FILE, BASE_PHOTOS_DIR):
-        return
+    """加载底册：增量建库——已缓存且未变化的照片直接复用，只对新增/变更的照片提取特征。"""
     init_recognizer()
+    gallery.load_cache(GALLERY_CACHE_FILE)
     stats = gallery.build(BASE_PHOTOS_DIR, recognizer)
-    gallery.save_cache(GALLERY_CACHE_FILE)
-    print(f"底册建库完成：学生 {stats['students']} 人，跳过 {len(stats['skipped'])} 张")
+    if stats.get("changed") or stats.get("removed"):
+        gallery.save_cache(GALLERY_CACHE_FILE)
+    print(f"底册加载完成：学生 {stats['students']} 人（新增/变更 {stats['changed']}，复用 {stats['reused']}，跳过 {len(stats['skipped'])} 张）")
 
 
 # ===== 识别循环（后台线程） =====

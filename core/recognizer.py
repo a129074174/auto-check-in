@@ -3,6 +3,8 @@
 import sys
 import threading
 
+from .config import DET_SIZE
+
 
 def _model_root():
     """打包后返回解包目录（模型已内置），源码运行返回 None（用默认 ~/.insightface）。"""
@@ -14,7 +16,9 @@ def _model_root():
 class Recognizer:
     """封装 insightface 的人脸检测与 512 维特征提取，线程安全。"""
 
-    def __init__(self, model_name="buffalo_l", det_size=(640, 640), providers=None):
+    def __init__(self, model_name="buffalo_l", det_size=None, providers=None):
+        if det_size is None:
+            det_size = DET_SIZE
         self._lock = threading.Lock()
         if providers is None:
             providers = ["CPUExecutionProvider"]
